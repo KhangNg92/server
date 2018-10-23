@@ -8,8 +8,23 @@ import { CarListComponent } from './car-list/car-list.component';
 import { MatButtonModule, MatCardModule, MatInputModule, MatListModule, MatToolbarModule } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CarEditComponent } from './car-edit/car-edit.component';
-
+import { OktaCallbackComponent, OktaAuthModule } from '@okta/okta-angular';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './shared/okta/auth.interceptor';
+import { HomeComponent } from './home/home.component';
+const config = {
+  issuer: 'https://dev-833203.oktapreview.com/oauth2/default',
+  redirectUri: 'http://localhost:4200/implicit/callback',
+  clientId: '0oagud09xcB0ZCPbL0h7'
+};
 const appRoutes: Routes = [
+  {path: '', redirectTo: '/home', pathMatch: 'full'},
+  {
+    path: 'home',
+    component: HomeComponent
+  },
+  
+  
   { path: '', redirectTo: '/car-list', pathMatch: 'full' },
   {
     path: 'car-list',
@@ -22,13 +37,19 @@ const appRoutes: Routes = [
   {
     path: 'car-edit/:id',
     component: CarEditComponent
-  }
+  },
+  {
+    path: 'implicit/callback',
+    component: OktaCallbackComponent
+  },
+  
 ];
 @NgModule({
   declarations: [
     AppComponent,
     CarListComponent,
-    CarEditComponent
+    CarEditComponent,
+    HomeComponent
   ],
   imports: [
     BrowserModule,
@@ -40,9 +61,10 @@ const appRoutes: Routes = [
     MatListModule,
     MatToolbarModule,
     FormsModule,
-    RouterModule.forRoot(appRoutes)
+    RouterModule.forRoot(appRoutes),
+    OktaAuthModule.initAuth(config)
   ],
-  providers: [],
+  providers: [{provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true}],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
